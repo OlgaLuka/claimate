@@ -9,6 +9,8 @@ export default function Home(){
             `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_STRIPE_CLIENT_ID ?? ''}&scope=read_only&redirect_uri=${process.env.NEXT_PUBLIC_APP_URL ?? ''}/api/stripe/callback&state=REPLACE_WITH_USER_ID`
           }>Connect Stripe</a>
         </li>
+        <li><a href={`/api/stripe/authorize?state=${userId}`}>Connect Stripe</a>
+        </li>
         <li>
           <a href={`/api/shopify/install?shop=YOURSHOP.myshopify.com&state=REPLACE_WITH_USER_ID`}>Connect Shopify</a>
         </li>
