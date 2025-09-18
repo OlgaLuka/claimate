@@ -1,19 +1,22 @@
-// pages/api/stripe/authorize.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const app = process.env.APP_URL!;            // напр. https://claimate.vercel.app
-  const client = process.env.STRIPE_CLIENT_ID!; // формат ca_...
+  const client = process.env.STRIPE_CLIENT_ID!;          // ca_...
   const state = String(req.query.state || "");
-  if (!app || !client || !state) {
-    return res.status(400).json({ error: "Missing APP_URL, STRIPE_CLIENT_ID or state" });
-  }
-  const redirect = encodeURIComponent(`${app}/api/stripe/callback`);
-  const url =
-    `https://connect.stripe.com/oauth/authorize?response_type=code` +
-    `&client_id=${encodeURIComponent(client)}` +
-    `&scope=read_only` +
-    `&redirect_uri=${redirect}` +
-    `&state=${encodeURIComponent(state)}`;
-  res.redirect(302, url);
+  if (!client || !state) return res.status(400).json({ error: "Missing STRIPE_CLIENT_ID or state" });
+
+  const proto = (req.headers["x-forwarded-proto"] as string) || "https";
+  const host  = req.headers.host!;
+  const base  = `${proto}://${host}`;
+  const redirectUri = `${base}/api/stripe/callback`;
+
+  const qs = new URLSearchParams({
+    response_type: "code",
+    client_id: client,
+    scope: "read_write",              // ⬅️ було read_only
+    redirect_uri: redirectUri,
+    state,
+  });
+
+  res.redirect(302, `https://connect.stripe.com/oauth/authorize?${qs.toString()}`);
 }
